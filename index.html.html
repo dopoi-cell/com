@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Конвертер валют</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            background-color: #eef2f3;
+        }
+        .container {
+            max-width: 400px;
+            padding: 20px;
+            border: 1px solid #ccc;
+            border-radius: 10px;
+            background-color: #fff;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+        }
+        input {
+            width: 100%;
+            padding: 10px;
+            margin: 5px 0;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 16px;
+        }
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #28a745;
+            color: white;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .result {
+            font-weight: bold;
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h2>Конвертер валют</h2>
+    <p>Курси валют оновлюються автоматично з НБУ</p>
+    
+    <label>Сума у грн:</label>
+    <input type="number" id="amount" placeholder="Введіть суму" min="1">
+
+    <button onclick="convert()">Перевести</button>
+
+    <h3>Результати:</h3>
+    <label>Ціна у доларах:</label>
+    <input type="text" id="usd" class="result" readonly>
+
+    <label>Ціна у євро:</label>
+    <input type="text" id="eur" class="result" readonly>
+
+    <label>Ціна у фунтах:</label>
+    <input type="text" id="gbp" class="result" readonly>
+</div>
+
+<script>
+    let exchangeRates = {};
+
+    async function fetchExchangeRates() {
+        try {
+            let response = await fetch('https://bank.gov.ua/NBUStatService/v1/statdirectory/exchange?json');
+            let data = await response.json();
+            
+            exchangeRates = {
+                USD: data.find(rate => rate.cc === 'USD').rate,
+                EUR: data.find(rate => rate.cc === 'EUR').rate,
+                GBP: data.find(rate => rate.cc === 'GBP').rate
+            };
+        } catch (error) {
+            alert('Не вдалося завантажити курси валют. Спробуйте пізніше.');
+        }
+    }
+
+    function convert() {
+        let amount = parseFloat(document.getElementById("amount").value);
+        if (isNaN(amount) || amount <= 0) {
+            alert("Будь ласка, введіть коректну суму.");
+            return;
+        }
+        
+        document.getElementById("usd").value = (amount / exchangeRates.USD).toFixed(2) + " $";
+        document.getElementById("eur").value = (amount / exchangeRates.EUR).toFixed(2) + " €";
+        document.getElementById("gbp").value = (amount / exchangeRates.GBP).toFixed(2) + " £";
+    }
+    
+    fetchExchangeRates();
+</script>
+
+</body>
+</html>
